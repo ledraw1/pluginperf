@@ -91,6 +91,37 @@ static Stats measureOne(AudioPluginInstance& plug,
 
     const int latency = plug.getLatencySamples();
 
+    // Measurement consistency checks (warnings to stderr)
+    bool hasWarnings = false;
+    
+    // Sanity check: min <= median <= mean
+    if (mn > median || median > mean) {
+        std::cerr << "WARNING [buffer=" << block << "]: Sanity check failed - "
+                  << "min=" << mn << " median=" << median << " mean=" << mean << "\n";
+        hasWarnings = true;
+    }
+    
+    // Outlier detection: p95/median ratio too high suggests instability
+    if (median > 0 && (p95 / median) > 3.0) {
+        std::cerr << "WARNING [buffer=" << block << "]: High outlier ratio - "
+                  << "p95/median=" << (p95/median) << " (suggests measurement instability)\n";
+        hasWarnings = true;
+    }
+    
+    // High CV suggests poor measurement stability
+    if (cv > 30.0) {
+        std::cerr << "WARNING [buffer=" << block << "]: High coefficient of variation - "
+                  << "CV=" << cv << "% (consider more iterations or warmup)\n";
+        hasWarnings = true;
+    }
+    
+    // Negative or zero values are invalid
+    if (mean <= 0 || median <= 0) {
+        std::cerr << "ERROR [buffer=" << block << "]: Invalid measurements - "
+                  << "mean=" << mean << " median=" << median << "\n";
+        hasWarnings = true;
+    }
+
     plug.releaseResources();
 
     return Stats{ mean, median, p95, mn, mx, stdDev, cv, rtPct, dspLoad, latency };

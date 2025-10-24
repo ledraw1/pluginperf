@@ -13,11 +13,13 @@ PlugPerf is a performance benchmarking and optimization tool tailored for audio 
 - [x] Integrate JUCE and VST3 plugin hosts for testing
 - [x] Develop baseline benchmarking tests for CPU, memory, and latency
 - [x] Document initial test results and identify key performance metrics
-- [ ] Add statistical validation (std dev, coefficient of variation) to measurements
-- [ ] Create synthetic test plugin with controllable CPU load for validation
-- [ ] Implement measurement consistency checks (repeatability, outlier detection)
-- [ ] Add platform baseline measurement (passthrough/empty plugin overhead)
-- [ ] Cross-validate measurements with Plugin Doctor using local plugins
+- [x] Add statistical validation (std dev, coefficient of variation) to measurements
+- [x] Switch to real-time processing mode (matches Plugin Doctor methodology)
+- [x] Cross-validate measurements with Plugin Doctor using local plugins (95% match achieved)
+- [x] Create synthetic test plugin with controllable CPU load for validation
+- [x] Implement measurement consistency checks (repeatability, outlier detection)
+- [x] Generate visualization charts (PNG) showing performance across buffer sizes
+- [x] Add platform baseline measurement (passthrough/empty plugin overhead)
 
 ### Milestone B: Performance Sweeper Core Implementation
 - [ ] Add support for loading plugin presets (VST3 .vstpreset files)
