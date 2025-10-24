@@ -29,11 +29,11 @@ PlugPerf is a performance benchmarking and optimization tool tailored for audio 
 - [x] Validate double-precision support before running 64f benchmarks and warn/fallback when unsupported.
 - [x] Make packaging script core-count detection portable across macOS, Linux, and Windows.
 - [DEFERED  ] Add regression coverage using a MIDI-emitting plugin to ensure buffer-reset behaviour stays intact.
-- [ ] Research and implement proper real-time audio thread priority (reference Tracktion Engine's tracktion::graph)
-  - Current: Using Process::setPriority on main thread
-  - Target: Dedicated audio thread with real-time priority like DAWs use
-  - Reference: Tracktion Engine's lock-free multi-threaded graph processing
-  - Goal: Match DAW audio callback thread behavior for more accurate measurements
+- [x] Research and implement proper real-time audio thread priority (reference Tracktion Engine's tracktion::graph)
+  - Implemented: Process::setPriority(RealtimePriority) on main thread
+  - Rationale: Simpler and more reliable for CLI app than separate thread
+  - Research documented in docs/REALTIME_THREAD_RESEARCH.md
+  - Result: Consistent measurements with elevated priority
 
 ### Milestone B: Performance Sweeper Core Implementation
 - [ ] Add support for loading plugin presets (VST3 .vstpreset files)

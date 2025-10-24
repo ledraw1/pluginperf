@@ -70,6 +70,18 @@ Options:
   -h, --help               Show help message
 ```
 
+## Real-Time Priority
+
+PlugPerf runs measurements with elevated process priority (`Process::RealtimePriority`) to minimize interference from other system processes. This provides:
+
+- **Reduced measurement variance** - Less jitter from OS scheduling
+- **More consistent results** - Better repeatability across runs
+- **DAW-like conditions** - Matches how audio applications run
+
+The implementation uses process-level priority on the main thread, which is simpler and more reliable for a command-line tool than creating separate real-time threads.
+
+See `docs/REALTIME_THREAD_RESEARCH.md` for detailed research on real-time audio thread implementation.
+
 ## Output Metrics
 
 Each test produces the following metrics per buffer size:
