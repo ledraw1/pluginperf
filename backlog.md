@@ -20,6 +20,8 @@ PlugPerf is a performance benchmarking and optimization tool tailored for audio 
 - [x] Implement measurement consistency checks (repeatability, outlier detection)
 - [x] Generate visualization charts (PNG) showing performance across buffer sizes
 - [x] Add platform baseline measurement (passthrough/empty plugin overhead)
+- [x] Add support for multiple bit depths (32f, 64f)
+- [x] Add support for configurable sample rates
 
 ### Milestone B: Performance Sweeper Core Implementation
 - [ ] Add support for loading plugin presets (VST3 .vstpreset files)

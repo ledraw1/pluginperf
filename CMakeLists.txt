@@ -90,6 +90,56 @@ endif()
 # =========================
 install(TARGETS plugperf RUNTIME DESTINATION bin)
 
+# Install tools
+install(PROGRAMS tools/visualize.py DESTINATION bin)
+install(PROGRAMS tools/run_measure.py DESTINATION bin)
+
+# Install documentation
+install(FILES README.md DESTINATION share/doc/plugperf)
+install(FILES backlog.md DESTINATION share/doc/plugperf)
+
+# =========================
+# Packaging
+# =========================
+set(CPACK_PACKAGE_NAME "PlugPerf")
+set(CPACK_PACKAGE_VENDOR "PlugPerf")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "High-precision audio plugin performance benchmarking tool")
+set(CPACK_PACKAGE_VERSION_MAJOR "1")
+set(CPACK_PACKAGE_VERSION_MINOR "0")
+set(CPACK_PACKAGE_VERSION_PATCH "0")
+set(CPACK_PACKAGE_INSTALL_DIRECTORY "PlugPerf")
+
+# macOS specific
+if(APPLE)
+  set(CPACK_GENERATOR "DragNDrop;TGZ")
+  set(CPACK_DMG_VOLUME_NAME "PlugPerf")
+  set(CPACK_DMG_FORMAT "UDBZ")
+  # Optional: set custom icon and background if resources exist
+  if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/resources/icon.icns")
+    set(CPACK_PACKAGE_ICON "${CMAKE_CURRENT_SOURCE_DIR}/resources/icon.icns")
+  endif()
+  if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/resources/background.png")
+    set(CPACK_DMG_BACKGROUND_IMAGE "${CMAKE_CURRENT_SOURCE_DIR}/resources/background.png")
+  endif()
+endif()
+
+# Linux specific
+if(UNIX AND NOT APPLE)
+  set(CPACK_GENERATOR "TGZ;DEB")
+  set(CPACK_DEBIAN_PACKAGE_MAINTAINER "PlugPerf")
+  set(CPACK_DEBIAN_PACKAGE_DEPENDS "")
+endif()
+
+# Windows specific
+if(WIN32)
+  set(CPACK_GENERATOR "ZIP;NSIS")
+endif()
+
+set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
+set(CPACK_RESOURCE_FILE_README "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
+
+include(CPack)
+
 # Helpful summary
 if(JUCE_FROM_ENV)
   message(STATUS "JUCE source: ENV: ${_JUCE_ENV_PATH}")

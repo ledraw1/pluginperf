@@ -11,6 +11,7 @@ struct Args {
     std::string pluginPath;
     double sampleRate = 48000.0;
     int channels = 2;
+    std::string bitDepth = "32f"; // 32f, 64f
     std::vector<int> buffers {32,64,128,256,512,1024,2048,4096,8192,16384};
     int warmup = 40;
     int iterations = 400;
@@ -38,6 +39,8 @@ Required:
 Options:
   --sr HZ                  Sample rate, e.g. 44100|48000|96000 (default 48000)
   --channels N             Channel count (default 2)
+  --bits DEPTH             Bit depth: 32f|64f (default 32f)
+                           32f=32-bit float, 64f=64-bit double
   --buffers CSV            Buffer sizes list (default 32..16384)
                            e.g. 32,64,128,256,512,1024,2048,4096,8192,16384
   --warmup N               Warmup iterations per size (default 40)
@@ -58,6 +61,7 @@ static inline bool parseArgs(int argc, char** argv, Args& a) {
         else if (k == "--plugin") { if (!need("--plugin")) return false; a.pluginPath = argv[++i]; }
         else if (k == "--sr") { if (!need("--sr")) return false; a.sampleRate = std::stod(argv[++i]); }
         else if (k == "--channels") { if (!need("--channels")) return false; a.channels = std::stoi(argv[++i]); }
+        else if (k == "--bits") { if (!need("--bits")) return false; a.bitDepth = argv[++i]; }
         else if (k == "--buffers") { if (!need("--buffers")) return false; a.buffers = parseIntList(argv[++i]); }
         else if (k == "--warmup") { if (!need("--warmup")) return false; a.warmup = std::stoi(argv[++i]); }
         else if (k == "--iterations") { if (!need("--iterations")) return false; a.iterations = std::stoi(argv[++i]); }
@@ -69,6 +73,9 @@ static inline bool parseArgs(int argc, char** argv, Args& a) {
     if (a.channels <= 0) { std::fprintf(stderr, "--channels must be > 0\n"); return false; }
     if (a.sampleRate <= 0) { std::fprintf(stderr, "--sr must be > 0\n"); return false; }
     if (a.buffers.empty()) { std::fprintf(stderr, "--buffers resulted in empty list\n"); return false; }
+    if (a.bitDepth != "32f" && a.bitDepth != "64f") {
+        std::fprintf(stderr, "--bits must be one of: 32f, 64f\n"); return false;
+    }
 
     return true;
 }

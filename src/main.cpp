@@ -193,31 +193,42 @@ int main (int argc, char** argv)
     const String pluginName = proc->getName();
     const String formatName = "VST3";
 
-    // Single-precision pass (default). Double can be added later.
-    proc->setProcessingPrecision(AudioProcessor::singlePrecision);
+    // Set processing precision based on bit depth
+    if (args.bitDepth == "64f") {
+        proc->setProcessingPrecision(AudioProcessor::doublePrecision);
+    } else {
+        proc->setProcessingPrecision(AudioProcessor::singlePrecision);
+    }
 
-    for (int block : args.buffers) {
-        if (block <= 0) continue;
-        const Stats s = measureOne<float>(*proc, block, args.channels, args.sampleRate,
-                                          args.warmup, args.iterations);
-        sink.row({ pluginName.toStdString(),
-                   args.pluginPath,
-                   formatName.toStdString(),
-                   std::to_string(args.sampleRate),
-                   std::to_string(args.channels),
-                   std::to_string(args.warmup),
-                   std::to_string(args.iterations),
-                   std::to_string(block),
-                   std::to_string(s.mean),
-                   std::to_string(s.median),
-                   std::to_string(s.p95),
-                   std::to_string(s.min),
-                   std::to_string(s.max),
-                   std::to_string(s.stdDev),
-                   std::to_string(s.cv),
-                   std::to_string(s.rtPct),
-                   std::to_string(s.dspLoad),
-                   std::to_string(s.latency) });
+    // Run measurements with appropriate sample type
+    if (args.bitDepth == "32f") {
+        // 32-bit float
+        for (int block : args.buffers) {
+            if (block <= 0) continue;
+            const Stats s = measureOne<float>(*proc, block, args.channels, args.sampleRate,
+                                              args.warmup, args.iterations);
+            sink.row({ pluginName.toStdString(), args.pluginPath, formatName.toStdString(),
+                       std::to_string(args.sampleRate), std::to_string(args.channels), args.bitDepth,
+                       std::to_string(args.warmup), std::to_string(args.iterations), std::to_string(block),
+                       std::to_string(s.mean), std::to_string(s.median), std::to_string(s.p95),
+                       std::to_string(s.min), std::to_string(s.max), std::to_string(s.stdDev),
+                       std::to_string(s.cv), std::to_string(s.rtPct), std::to_string(s.dspLoad),
+                       std::to_string(s.latency) });
+        }
+    } else if (args.bitDepth == "64f") {
+        // 64-bit double
+        for (int block : args.buffers) {
+            if (block <= 0) continue;
+            const Stats s = measureOne<double>(*proc, block, args.channels, args.sampleRate,
+                                               args.warmup, args.iterations);
+            sink.row({ pluginName.toStdString(), args.pluginPath, formatName.toStdString(),
+                       std::to_string(args.sampleRate), std::to_string(args.channels), args.bitDepth,
+                       std::to_string(args.warmup), std::to_string(args.iterations), std::to_string(block),
+                       std::to_string(s.mean), std::to_string(s.median), std::to_string(s.p95),
+                       std::to_string(s.min), std::to_string(s.max), std::to_string(s.stdDev),
+                       std::to_string(s.cv), std::to_string(s.rtPct), std::to_string(s.dspLoad),
+                       std::to_string(s.latency) });
+        }
     }
 
     // Clean up plugin instance before message manager

@@ -1,5 +1,0 @@
-plugin_name,plugin_path,format,sr,channels,warmup,iterations,block_size,mean_us,median_us,p95_us,min_us,max_us,std_dev_us,cv_pct,approx_rt_cpu_pct,dsp_load_pct,latency_samples
-Synthetic Test Plugin,synthetic_plugin/build/SyntheticTestPlugin_artefacts/Release/VST3/Synthetic Test Plugin.vst3,VST3,48000.000000,2,40,300,64,0.160417,0.166667,0.166667,0.125000,0.208333,0.015637,9.747472,0.012031,0.012031,0
-Synthetic Test Plugin,synthetic_plugin/build/SyntheticTestPlugin_artefacts/Release/VST3/Synthetic Test Plugin.vst3,VST3,48000.000000,2,40,300,256,0.203611,0.208333,0.208333,0.166667,0.333333,0.019267,9.462670,0.003818,0.003818,0
-Synthetic Test Plugin,synthetic_plugin/build/SyntheticTestPlugin_artefacts/Release/VST3/Synthetic Test Plugin.vst3,VST3,48000.000000,2,40,300,1024,0.392222,0.375000,0.416667,0.375000,0.500000,0.024384,6.216985,0.001839,0.001839,0
-Synthetic Test Plugin,synthetic_plugin/build/SyntheticTestPlugin_artefacts/Release/VST3/Synthetic Test Plugin.vst3,VST3,48000.000000,2,40,300,4096,1.104861,1.083333,1.166667,1.041667,1.208333,0.027525,2.491253,0.001295,0.001295,0

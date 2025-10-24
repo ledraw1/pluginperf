@@ -4,3 +4,11 @@ node_modules/
 .venv/
 node_modules
 .DS_Store
+
+# Test output files
+*.csv
+*.png
+results/
+
+# Synthetic plugin build
+synthetic_plugin/build/

@@ -27,7 +27,7 @@ struct CsvSink {
     // Column order must match what main.cpp writes
     void header() {
         (*out)
-            << "plugin_name,plugin_path,format,sr,channels,warmup,iterations,block_size,"
+            << "plugin_name,plugin_path,format,sr,channels,bit_depth,warmup,iterations,block_size,"
             << "mean_us,median_us,p95_us,min_us,max_us,std_dev_us,cv_pct,"
             << "approx_rt_cpu_pct,dsp_load_pct,latency_samples\n";
     }
