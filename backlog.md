@@ -13,8 +13,19 @@ PlugPerf is a performance benchmarking and optimization tool tailored for audio 
 - [x] Integrate JUCE and VST3 plugin hosts for testing
 - [x] Develop baseline benchmarking tests for CPU, memory, and latency
 - [x] Document initial test results and identify key performance metrics
+- [ ] Add statistical validation (std dev, coefficient of variation) to measurements
+- [ ] Create synthetic test plugin with controllable CPU load for validation
+- [ ] Implement measurement consistency checks (repeatability, outlier detection)
+- [ ] Add platform baseline measurement (passthrough/empty plugin overhead)
+- [ ] Cross-validate measurements with Plugin Doctor using local plugins
 
 ### Milestone B: Performance Sweeper Core Implementation
+- [ ] Add support for loading plugin presets (VST3 .vstpreset files)
+- [ ] Implement parameter setting via command line (--param name=value)
+- [ ] Add ability to save/restore plugin state for reproducible tests
+- [ ] Collect system metadata (CPU model, core count, RAM, OS version)
+- [ ] Collect plugin metadata (name, version, vendor, format, unique ID)
+- [ ] Capture test configuration metadata (sample rate, buffer sizes, iterations, etc.)
 - [ ] Design and implement the performance sweeper engine
 - [ ] Develop automated test runners for batch plugin evaluation
 - [ ] Create detailed profiling and reporting tools
@@ -35,7 +46,17 @@ PlugPerf is a performance benchmarking and optimization tool tailored for audio 
 - [ ] Test and validate performance sweeper on a variety of host DAWs
 - [ ] Collect user feedback and iterate on platform support issues
 
-### Milestone E: Advanced Features and Future Enhancements
+### Milestone E: Results Collection and Server Integration
+- [ ] Design SQL database schema for storing benchmark results
+- [ ] Implement JSON export format with complete metadata
+- [ ] Add HTTP/REST API client for uploading results to server
+- [ ] Include authentication and user identification for result submissions
+- [ ] Implement result validation and duplicate detection on server side
+- [ ] Create web interface for browsing and comparing benchmark results
+- [ ] Add privacy controls for sharing results publicly vs. privately
+- [ ] Implement result aggregation and statistical analysis across submissions
+
+### Milestone F: Advanced Features and Future Enhancements
 - [ ] Develop AI-driven performance optimization suggestions
 - [ ] Integrate with continuous integration (CI) systems for automated testing
 - [ ] Add support for real-time plugin parameter automation tracking

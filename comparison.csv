@@ -1,0 +1,10 @@
+plugin_name,plugin_path,format,sr,channels,warmup,iterations,block_size,mean_us,median_us,p95_us,min_us,max_us,approx_rt_cpu_pct,dsp_load_pct,latency_samples
+UADx Capitol Chambers,/Library/Audio/Plug-Ins/VST3/uaudio_capitol_chambers.vst3,VST3,48000.000000,2,40,200,64,41.581458,41.833333,55.125000,11.000000,86.291667,3.118609,3.118609,159
+UADx Capitol Chambers,/Library/Audio/Plug-Ins/VST3/uaudio_capitol_chambers.vst3,VST3,48000.000000,2,40,200,128,100.310208,97.375000,132.208333,32.708333,245.291667,3.761633,3.761633,159
+UADx Capitol Chambers,/Library/Audio/Plug-Ins/VST3/uaudio_capitol_chambers.vst3,VST3,48000.000000,2,40,200,256,222.420625,217.333333,304.666667,103.166667,447.791667,4.170387,4.170387,159
+UADx Capitol Chambers,/Library/Audio/Plug-Ins/VST3/uaudio_capitol_chambers.vst3,VST3,48000.000000,2,40,200,512,513.716875,509.833333,681.541667,297.875000,863.083333,4.816096,4.816096,159
+UADx Capitol Chambers,/Library/Audio/Plug-Ins/VST3/uaudio_capitol_chambers.vst3,VST3,48000.000000,2,40,200,1024,1167.078542,1160.583333,1502.875000,717.458333,2020.916667,5.470681,5.470681,159
+UADx Capitol Chambers,/Library/Audio/Plug-Ins/VST3/uaudio_capitol_chambers.vst3,VST3,48000.000000,2,40,200,2048,2443.819167,2409.083333,2948.541667,1713.833333,3291.250000,5.727701,5.727701,159
+UADx Capitol Chambers,/Library/Audio/Plug-Ins/VST3/uaudio_capitol_chambers.vst3,VST3,48000.000000,2,40,200,4096,4955.215417,4924.791667,5684.458333,3785.125000,6459.500000,5.806893,5.806893,159
+UADx Capitol Chambers,/Library/Audio/Plug-Ins/VST3/uaudio_capitol_chambers.vst3,VST3,48000.000000,2,40,200,8192,10029.043542,9855.833333,11739.916667,8173.750000,21963.791667,5.876393,5.876393,159
+UADx Capitol Chambers,/Library/Audio/Plug-Ins/VST3/uaudio_capitol_chambers.vst3,VST3,48000.000000,2,40,200,16384,19845.172708,19696.791667,22208.250000,17598.958333,23524.166667,5.814015,5.814015,159

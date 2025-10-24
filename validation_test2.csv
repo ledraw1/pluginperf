@@ -1,0 +1,3 @@
+plugin_name,plugin_path,format,sr,channels,warmup,iterations,block_size,mean_us,median_us,p95_us,min_us,max_us,std_dev_us,cv_pct,approx_rt_cpu_pct,dsp_load_pct,latency_samples
+UADx Capitol Chambers,/Library/Audio/Plug-Ins/VST3/uaudio_capitol_chambers.vst3,VST3,48000.000000,2,100,500,512,600.884667,588.208333,789.666667,313.750000,1198.500000,109.419890,18.209799,5.633294,5.633294,159
+UADx Capitol Chambers,/Library/Audio/Plug-Ins/VST3/uaudio_capitol_chambers.vst3,VST3,48000.000000,2,100,500,1024,1236.388500,1217.416667,1550.041667,791.791667,1953.333333,172.502173,13.952101,5.795571,5.795571,159

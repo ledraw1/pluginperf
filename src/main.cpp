@@ -2,6 +2,7 @@
 #include <juce_audio_basics/juce_audio_basics.h>
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <algorithm>
+#include <cmath>
 #include <iostream>
 #include <vector>
 #include <string>
@@ -11,7 +12,10 @@
 
 using namespace juce;
 
-struct Stats { double mean, median, p95, min, max, rtPct, dspLoad; int latency; };
+struct Stats { 
+    double mean, median, p95, min, max, stdDev, cv, rtPct, dspLoad; 
+    int latency; 
+};
 
 template <typename Sample>
 static Stats measureOne(AudioPluginInstance& plug,
@@ -22,7 +26,7 @@ static Stats measureOne(AudioPluginInstance& plug,
 
     // Recreate processing state per block size to surface reallocations
     plug.releaseResources();
-    plug.setNonRealtime(true); // offline-style processing
+    plug.setNonRealtime(false); // real-time processing mode (matches Plugin Doctor)
     plug.prepareToPlay(sr, block);
 
     AudioBuffer<Sample> buf(channels, block);
@@ -63,14 +67,33 @@ static Stats measureOne(AudioPluginInstance& plug,
     const double mn     = us.empty() ? 0.0 : us.front();
     const double mx     = us.empty() ? 0.0 : us.back();
 
+    // Calculate standard deviation
+    double variance = 0.0;
+    if (!us.empty()) {
+        for (double v : us) {
+            double diff = v - mean;
+            variance += diff * diff;
+        }
+        variance /= (double)us.size();
+    }
+    const double stdDev = std::sqrt(variance);
+    
+    // Coefficient of variation (relative standard deviation)
+    const double cv = (mean > 0.0) ? (stdDev / mean) * 100.0 : 0.0;
+
     const double rtWindow_us = (double)block * 1e6 / sr; // time budget per block
     const double rtPct = rtWindow_us > 0 ? (mean / rtWindow_us) * 100.0 : 0.0;
+
+    // Plugin Doctor style: processing time per sample as % of sample period
+    const double samplePeriod_us = 1e6 / sr; // time for one sample
+    const double meanPerSample_us = mean / (double)block; // avg time per sample
+    const double dspLoad = (meanPerSample_us / samplePeriod_us) * 100.0;
 
     const int latency = plug.getLatencySamples();
 
     plug.releaseResources();
 
-    return Stats{ mean, median, p95, mn, mx, rtPct, latency };
+    return Stats{ mean, median, p95, mn, mx, stdDev, cv, rtPct, dspLoad, latency };
 }
 
 static void printInstantiationError(const String& err, const String& path)
@@ -159,7 +182,10 @@ int main (int argc, char** argv)
                    std::to_string(s.p95),
                    std::to_string(s.min),
                    std::to_string(s.max),
+                   std::to_string(s.stdDev),
+                   std::to_string(s.cv),
                    std::to_string(s.rtPct),
+                   std::to_string(s.dspLoad),
                    std::to_string(s.latency) });
     }
 
