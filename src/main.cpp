@@ -12,10 +12,71 @@
 
 using namespace juce;
 
-struct Stats { 
-    double mean, median, p95, min, max, stdDev, cv, rtPct, dspLoad; 
-    int latency; 
+struct Stats {
+    double mean, median, p95, min, max, stdDev, cv, rtPct, dspLoad;
+    int latency;
 };
+
+static bool configureChannelLayout(AudioPluginInstance& proc,
+                                   int requestedChannels,
+                                   int& configuredChannels)
+{
+    if (requestedChannels <= 0)
+        return false;
+
+    if (requestedChannels != 1 && requestedChannels != 2)
+        return false;
+
+    const int inputBusCount  = proc.getBusCount(true);
+    const int outputBusCount = proc.getBusCount(false);
+    const auto desiredSet = (requestedChannels == 1)
+                                ? AudioChannelSet::mono()
+                                : AudioChannelSet::stereo();
+
+    bool layoutChanged = false;
+    auto layout = proc.getBusesLayout();
+
+    if (outputBusCount > 0)
+    {
+        if (layout.outputBuses.getReference(0) != desiredSet)
+        {
+            layout.outputBuses.getReference(0) = desiredSet;
+            layoutChanged = true;
+        }
+    }
+
+    if (inputBusCount > 0)
+    {
+        if (layout.inputBuses.getReference(0) != desiredSet)
+        {
+            layout.inputBuses.getReference(0) = desiredSet;
+            layoutChanged = true;
+        }
+    }
+
+    if (layoutChanged && ! proc.setBusesLayout(layout))
+        return false;
+
+    const int actualInputs  = inputBusCount  > 0 ? proc.getChannelCountOfBus(true, 0)  : 0;
+    const int actualOutputs = outputBusCount > 0 ? proc.getChannelCountOfBus(false, 0) : 0;
+
+    if (outputBusCount > 0)
+    {
+        if (actualOutputs != requestedChannels)
+            return false;
+
+        configuredChannels = actualOutputs;
+    }
+    else
+    {
+        configuredChannels = requestedChannels;
+    }
+
+    if (inputBusCount > 0 && actualInputs != 0 && actualInputs != requestedChannels)
+        return false;
+
+    return true;
+}
 
 template <typename Sample>
 static Stats measureOne(AudioPluginInstance& plug,
@@ -40,12 +101,16 @@ static Stats measureOne(AudioPluginInstance& plug,
 
     // Warmup iterations
     for (int i = 0; i < warmup; ++i)
+    {
+        midi.clear();
         plug.processBlock(buf, midi);
+    }
 
     std::vector<double> us; us.reserve((size_t)iters);
     const double tps = (double) Time::getHighResolutionTicksPerSecond();
 
     for (int i = 0; i < iters; ++i) {
+        midi.clear();
         const int64 t0 = Time::getHighResolutionTicks();
         plug.processBlock(buf, midi);
         const int64 t1 = Time::getHighResolutionTicks();
@@ -92,34 +157,28 @@ static Stats measureOne(AudioPluginInstance& plug,
     const int latency = plug.getLatencySamples();
 
     // Measurement consistency checks (warnings to stderr)
-    bool hasWarnings = false;
-    
     // Sanity check: min <= median <= mean
     if (mn > median || median > mean) {
         std::cerr << "WARNING [buffer=" << block << "]: Sanity check failed - "
                   << "min=" << mn << " median=" << median << " mean=" << mean << "\n";
-        hasWarnings = true;
     }
     
     // Outlier detection: p95/median ratio too high suggests instability
     if (median > 0 && (p95 / median) > 3.0) {
         std::cerr << "WARNING [buffer=" << block << "]: High outlier ratio - "
                   << "p95/median=" << (p95/median) << " (suggests measurement instability)\n";
-        hasWarnings = true;
     }
     
     // High CV suggests poor measurement stability
     if (cv > 30.0) {
         std::cerr << "WARNING [buffer=" << block << "]: High coefficient of variation - "
                   << "CV=" << cv << "% (consider more iterations or warmup)\n";
-        hasWarnings = true;
     }
     
     // Negative or zero values are invalid
     if (mean <= 0 || median <= 0) {
         std::cerr << "ERROR [buffer=" << block << "]: Invalid measurements - "
                   << "mean=" << mean << " median=" << median << "\n";
-        hasWarnings = true;
     }
 
     plug.releaseResources();
@@ -182,6 +241,16 @@ int main (int argc, char** argv)
 
     auto* proc = instance.get();
 
+    Process::setPriority(Process::RealtimePriority);
+
+    int measurementChannels = args.channels;
+    if (! configureChannelLayout(*proc, args.channels, measurementChannels))
+    {
+        std::cerr << "Unable to configure plugin for "
+                  << args.channels << " channels.\n";
+        return 2;
+    }
+
     CsvSink sink;
     if (!sink.open(args.outCsv)) {
         std::cerr << "Failed to open CSV for writing: " << args.outCsv << "\n";
@@ -194,35 +263,44 @@ int main (int argc, char** argv)
     const String formatName = "VST3";
 
     // Set processing precision based on bit depth
-    if (args.bitDepth == "64f") {
+    const bool wantsDouble = args.bitDepth == "64f";
+    const bool canDouble = proc->supportsDoublePrecisionProcessing();
+    const bool useDouble = wantsDouble && canDouble;
+    const std::string bitDepthLabel = useDouble ? "64f" : "32f";
+
+    if (wantsDouble && !canDouble) {
+        std::cerr << "WARNING: Plugin does not support double precision processing; "
+                  << "falling back to single precision measurements.\n";
+    }
+
+    if (useDouble) {
         proc->setProcessingPrecision(AudioProcessor::doublePrecision);
     } else {
         proc->setProcessingPrecision(AudioProcessor::singlePrecision);
     }
 
     // Run measurements with appropriate sample type
-    if (args.bitDepth == "32f") {
-        // 32-bit float
+    if (useDouble) {
         for (int block : args.buffers) {
             if (block <= 0) continue;
-            const Stats s = measureOne<float>(*proc, block, args.channels, args.sampleRate,
-                                              args.warmup, args.iterations);
+            const Stats s = measureOne<double>(*proc, block, measurementChannels, args.sampleRate,
+                                               args.warmup, args.iterations);
             sink.row({ pluginName.toStdString(), args.pluginPath, formatName.toStdString(),
-                       std::to_string(args.sampleRate), std::to_string(args.channels), args.bitDepth,
+                       std::to_string(args.sampleRate), std::to_string(measurementChannels), bitDepthLabel,
                        std::to_string(args.warmup), std::to_string(args.iterations), std::to_string(block),
                        std::to_string(s.mean), std::to_string(s.median), std::to_string(s.p95),
                        std::to_string(s.min), std::to_string(s.max), std::to_string(s.stdDev),
                        std::to_string(s.cv), std::to_string(s.rtPct), std::to_string(s.dspLoad),
                        std::to_string(s.latency) });
         }
-    } else if (args.bitDepth == "64f") {
-        // 64-bit double
+    } else {
+        // 32-bit float
         for (int block : args.buffers) {
             if (block <= 0) continue;
-            const Stats s = measureOne<double>(*proc, block, args.channels, args.sampleRate,
-                                               args.warmup, args.iterations);
+            const Stats s = measureOne<float>(*proc, block, measurementChannels, args.sampleRate,
+                                              args.warmup, args.iterations);
             sink.row({ pluginName.toStdString(), args.pluginPath, formatName.toStdString(),
-                       std::to_string(args.sampleRate), std::to_string(args.channels), args.bitDepth,
+                       std::to_string(args.sampleRate), std::to_string(measurementChannels), bitDepthLabel,
                        std::to_string(args.warmup), std::to_string(args.iterations), std::to_string(block),
                        std::to_string(s.mean), std::to_string(s.median), std::to_string(s.p95),
                        std::to_string(s.min), std::to_string(s.max), std::to_string(s.stdDev),

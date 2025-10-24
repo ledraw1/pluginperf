@@ -19,7 +19,22 @@ cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local
 
 # Build
 echo "Building..."
-cmake --build build --config Release -j$(sysctl -n hw.ncpu)
+JOBS=${JOBS:-}
+if [[ -z "$JOBS" ]]; then
+  if command -v sysctl >/dev/null 2>&1; then
+    JOBS=$(sysctl -n hw.ncpu 2>/dev/null || echo 1)
+  elif command -v nproc >/dev/null 2>&1; then
+    JOBS=$(nproc 2>/dev/null || echo 1)
+  elif command -v getconf >/dev/null 2>&1; then
+    JOBS=$(getconf _NPROCESSORS_ONLN 2>/dev/null || echo 1)
+  else
+    JOBS=1
+  fi
+fi
+if ! [[ "$JOBS" =~ ^[0-9]+$ ]] || [[ "$JOBS" -lt 1 ]]; then
+  JOBS=1
+fi
+cmake --build build --config Release -j"$JOBS"
 
 # Create package
 echo "Creating package..."
