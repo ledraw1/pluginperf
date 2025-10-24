@@ -148,6 +148,27 @@ This wrapper:
 - Displays a summary table after completion
 - Automatically finds the plugperf binary
 
+### Batch Testing
+
+Test all plugins in your system VST3 folder:
+
+```bash
+python3 tools/test_all_plugins.py \
+  --vst3-dir /Library/Audio/Plug-Ins/VST3 \
+  --output-dir ./plugin_results \
+  --buffers 64,256,1024,4096 \
+  --iterations 200 \
+  --skip-errors
+```
+
+Features:
+- Automatically discovers all VST3 plugins
+- Tests each plugin with configurable settings
+- Saves individual CSV results per plugin
+- Generates summary report with statistics
+- Optional `--skip-errors` to continue on failures
+- 5-minute timeout per plugin
+
 ## Examples
 
 ### Compare bit depths
