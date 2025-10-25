@@ -48,16 +48,15 @@ public:
     
     /**
      * Run a benchmark with the given configuration.
-     * Runs on the current thread with elevated priority (simpler and more reliable).
+     * Assumes the calling thread already has elevated priority set.
      */
     BenchmarkResult runBenchmark(const BenchmarkConfig& config)
     {
         config_ = config;
         result_ = BenchmarkResult();
         
-        // Set current thread to high priority
-        // This is more reliable than creating a separate thread in a CLI app
-        Process::setPriority(Process::RealtimePriority);
+        // Note: Priority should be set once by caller before running benchmarks
+        // This avoids repeated priority changes which could affect measurements
         
         try
         {

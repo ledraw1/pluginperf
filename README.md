@@ -77,8 +77,9 @@ PlugPerf runs measurements with elevated process priority (`Process::RealtimePri
 - **Reduced measurement variance** - Less jitter from OS scheduling
 - **More consistent results** - Better repeatability across runs
 - **DAW-like conditions** - Matches how audio applications run
+- **Continuous priority** - Set once at startup, maintained throughout all measurements
 
-The implementation uses process-level priority on the main thread, which is simpler and more reliable for a command-line tool than creating separate real-time threads.
+The implementation uses process-level priority on the main thread, which is simpler and more reliable for a command-line tool than creating separate real-time threads. Priority is set once after plugin loading and maintained for the entire test session, avoiding repeated priority changes that could affect measurements.
 
 See `docs/REALTIME_THREAD_RESEARCH.md` for detailed research on real-time audio thread implementation.
 

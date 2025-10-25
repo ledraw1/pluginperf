@@ -131,6 +131,10 @@ int main (int argc, char** argv)
 
     auto* proc = instance.get();
 
+    // Set process to real-time priority once for all measurements
+    // This ensures consistent priority throughout the entire test session
+    Process::setPriority(Process::RealtimePriority);
+
     int measurementChannels = args.channels;
     if (! configureChannelLayout(*proc, args.channels, measurementChannels))
     {
