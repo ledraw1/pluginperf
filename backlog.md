@@ -43,8 +43,17 @@ PlugPerf is a performance benchmarking and optimization tool tailored for audio 
   - Allows setting parameters by index, name, or ID
   - JSON output for programmatic use
   - Verbose mode for detailed parameter information
-- [ ] Add support for loading plugin presets (VST3 .vstpreset files)
-- [ ] Add ability to save/restore plugin state for reproducible tests
+- [x] Add support for loading plugin presets (VST3 .vstpreset files)
+  - Implemented `PluginPresetManager` class for preset operations
+  - Load/save VST3 presets with metadata (name, author, timestamp)
+  - Preset info command to inspect preset files
+  - Base64 state encoding for text storage
+  - XML-based preset format with metadata support
+- [x] Add ability to save/restore plugin state for reproducible tests
+  - Save current plugin state to .vstpreset file
+  - Load preset before running benchmarks
+  - Verify loaded state with parameter queries
+  - Integrated into `plugparams` tool
 - [ ] Collect system metadata (CPU model, core count, RAM, OS version)
 - [ ] Collect plugin metadata (name, version, vendor, format, unique ID)
 - [ ] Capture test configuration metadata (sample rate, buffer sizes, iterations, etc.)

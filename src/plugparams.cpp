@@ -4,6 +4,7 @@
 #include <string>
 
 #include "plugin_params.hpp"
+#include "plugin_presets.hpp"
 
 using namespace juce;
 
@@ -20,6 +21,9 @@ Options:
   --verbose               Show detailed parameter information
   --get INDEX|NAME        Get value of specific parameter
   --set INDEX|NAME=VALUE  Set parameter value (0.0-1.0 normalized)
+  --load-preset PATH      Load VST3 preset file (.vstpreset)
+  --save-preset PATH      Save current state to preset file
+  --preset-info PATH      Show information about a preset file
   --json                  Output in JSON format
   
 Examples:
@@ -42,12 +46,24 @@ Examples:
   
   # JSON output
   plugparams --plugin plugin.vst3 --json
+  
+  # Load preset
+  plugparams --plugin plugin.vst3 --load-preset preset.vstpreset
+  
+  # Save preset
+  plugparams --plugin plugin.vst3 --save-preset my_preset.vstpreset
+  
+  # Preset info
+  plugparams --preset-info preset.vstpreset
 
 )" << std::endl;
 }
 
 struct Args {
     String pluginPath;
+    String loadPresetPath;
+    String savePresetPath;
+    String presetInfoPath;
     bool listParams = false;
     bool verbose = false;
     bool jsonOutput = false;
@@ -70,6 +86,12 @@ bool parseArgs(int argc, char** argv, Args& args) {
             args.verbose = true;
         } else if (arg == "--json") {
             args.jsonOutput = true;
+        } else if (arg == "--load-preset" && i + 1 < argc) {
+            args.loadPresetPath = argv[++i];
+        } else if (arg == "--save-preset" && i + 1 < argc) {
+            args.savePresetPath = argv[++i];
+        } else if (arg == "--preset-info" && i + 1 < argc) {
+            args.presetInfoPath = argv[++i];
         } else if (arg == "--get" && i + 1 < argc) {
             args.getParams.push_back(argv[++i]);
         } else if (arg == "--set" && i + 1 < argc) {
@@ -86,14 +108,16 @@ bool parseArgs(int argc, char** argv, Args& args) {
         }
     }
     
-    if (args.pluginPath.isEmpty()) {
+    // Allow preset-info without plugin
+    if (args.pluginPath.isEmpty() && args.presetInfoPath.isEmpty()) {
         std::cerr << "ERROR: --plugin is required\n";
         printUsage();
         return false;
     }
     
     // Default to list if no action specified
-    if (args.getParams.empty() && args.setParams.empty()) {
+    if (args.getParams.empty() && args.setParams.empty() && 
+        args.loadPresetPath.isEmpty() && args.savePresetPath.isEmpty()) {
         args.listParams = true;
     }
     
@@ -149,6 +173,12 @@ int main(int argc, char** argv) {
     if (!parseArgs(argc, argv, args))
         return argc <= 1 ? 0 : 1;
     
+    // Handle preset-info without loading plugin
+    if (!args.presetInfoPath.isEmpty()) {
+        PluginPresetManager::printPresetInfo(args.presetInfoPath);
+        return 0;
+    }
+    
     // Initialize JUCE
     MessageManager::getInstance();
     
@@ -200,10 +230,26 @@ int main(int argc, char** argv) {
     // Prepare plugin for processing
     plugin->prepareToPlay(48000.0, 512);
     
+    // Handle --load-preset first (before any parameter operations)
+    if (!args.loadPresetPath.isEmpty()) {
+        StringPairArray metadata;
+        if (PluginPresetManager::loadPresetWithMetadata(*plugin, args.loadPresetPath, &metadata)) {
+            std::cout << "✓ Loaded preset: " << args.loadPresetPath << "\n";
+            if (metadata.getValue("name", "").isNotEmpty()) {
+                std::cout << "  Name: " << metadata.getValue("name", "") << "\n";
+            }
+            if (metadata.getValue("author", "").isNotEmpty()) {
+                std::cout << "  Author: " << metadata.getValue("author", "") << "\n";
+            }
+        } else {
+            std::cerr << "✗ Failed to load preset\n";
+        }
+    }
+    
     // Query parameters
     auto params = PluginParameterManager::queryParameters(*plugin);
     
-    // Handle --set operations first
+    // Handle --set operations
     for (const auto& [paramName, value] : args.setParams) {
         bool success = false;
         
@@ -259,6 +305,16 @@ int main(int argc, char** argv) {
         
         if (!found) {
             std::cerr << "ERROR: Parameter '" << paramName << "' not found\n";
+        }
+    }
+    
+    // Handle --save-preset
+    if (!args.savePresetPath.isEmpty()) {
+        if (PluginPresetManager::createPresetWithMetadata(*plugin, args.savePresetPath, 
+                                                          plugin->getName(), "PlugPerf")) {
+            std::cout << "✓ Saved preset: " << args.savePresetPath << "\n";
+        } else {
+            std::cerr << "✗ Failed to save preset\n";
         }
     }
     

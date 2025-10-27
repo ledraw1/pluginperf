@@ -92,6 +92,26 @@ plugparams --plugin plugin.vst3 --json
 plugparams --plugin plugin.vst3 --json | jq '.parameters[] | select(.type == "Boolean")'
 ```
 
+### Preset Management
+
+```bash
+# Save current state to preset
+plugparams --plugin plugin.vst3 \
+  --set "Gain=0.75" --set "Mix=0.5" \
+  --save-preset my_settings.vstpreset
+
+# Load preset
+plugparams --plugin plugin.vst3 --load-preset my_settings.vstpreset
+
+# Verify loaded preset
+plugparams --plugin plugin.vst3 \
+  --load-preset my_settings.vstpreset \
+  --get "Gain" --get "Mix"
+
+# Inspect preset file
+plugparams --preset-info my_settings.vstpreset
+```
+
 ## Parameter Types
 
 ### Boolean
@@ -313,6 +333,41 @@ for mix in 0.0 0.25 0.5 0.75 1.0; do
     --buffers 1024 \
     --iterations 200 \
     --out "$OUTPUT_DIR/mix_${mix}.csv"
+done
+```
+
+### Reproducible Testing with Presets
+
+```bash
+#!/bin/bash
+# Create reproducible test configurations
+
+PLUGIN="compressor.vst3"
+
+# Create "gentle" preset
+plugparams --plugin "$PLUGIN" \
+  --set "Ratio=0.0" \
+  --set "Attack=0.5" \
+  --set "Release=0.5" \
+  --save-preset gentle.vstpreset
+
+# Create "aggressive" preset
+plugparams --plugin "$PLUGIN" \
+  --set "Ratio=1.0" \
+  --set "Attack=0.0" \
+  --set "Release=0.0" \
+  --save-preset aggressive.vstpreset
+
+# Test each preset
+for preset in gentle aggressive; do
+  echo "Testing $preset preset..."
+  
+  plugparams --plugin "$PLUGIN" --load-preset "${preset}.vstpreset"
+  
+  plugperf --plugin "$PLUGIN" \
+    --buffers 1024 \
+    --iterations 200 \
+    --out "results_${preset}.csv"
 done
 ```
 
