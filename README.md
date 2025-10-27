@@ -9,8 +9,10 @@ A high-precision performance benchmarking tool for audio plugins, with focus on 
 - **Multiple bit depths** - 32-bit float, 64-bit double
 - **Configurable sample rates** - Any rate (44.1kHz, 48kHz, 96kHz, 192kHz, etc.)
 - **Measurement consistency checks** - Automatic warnings for outliers and instability
+- **Parameter inspection** - Query and manipulate plugin parameters
 - **CSV export** - Detailed results for analysis and visualization
 - **Visualization tools** - Generate performance charts (PNG)
+- **Batch testing** - Automated testing of multiple plugins
 - **Cross-validated** - 95% match with Plugin Doctor measurements
 
 ## Quick Start
@@ -170,6 +172,37 @@ Features:
 - Optional `--skip-errors` to continue on failures
 - 5-minute timeout per plugin
 
+### Parameter Inspection
+
+Inspect and manipulate plugin parameters with `plugparams`:
+
+```bash
+# List all parameters
+./build/plugparams --plugin plugin.vst3
+
+# Detailed view with ranges and values
+./build/plugparams --plugin plugin.vst3 --verbose
+
+# Read → Change → Validate workflow
+./build/plugparams --plugin plugin.vst3 \
+  --get "Gain" --get "Mix"                    # Read current
+  
+./build/plugparams --plugin plugin.vst3 \
+  --set "Gain=0.75" --set "Mix=0.5" \         # Change
+  --get "Gain" --get "Mix"                    # Validate
+
+# JSON output for automation
+./build/plugparams --plugin plugin.vst3 --json
+```
+
+Features:
+- Classifies parameters as Boolean, Discrete, or Continuous
+- Shows ranges, possible values, and current settings
+- Set parameters by index, name, or ID
+- Combine `--set` and `--get` to validate changes
+- JSON output for programmatic use
+- See [docs/PLUGIN_PARAMETERS.md](docs/PLUGIN_PARAMETERS.md) for details
+
 ## Examples
 
 ### Compare bit depths
@@ -199,6 +232,26 @@ Features:
   --buffers 256,512,1024 \
   --iterations 100 \
   --warmup 20
+```
+
+### Test with different parameter settings
+
+```bash
+# Test compressor at different ratios
+for ratio in 0.0 0.33 0.67 1.0; do
+  ./build/plugparams --plugin compressor.vst3 --set "Ratio=$ratio"
+  ./build/plugperf --plugin compressor.vst3 \
+    --buffers 1024 --iterations 200 \
+    --out "results_ratio_${ratio}.csv"
+done
+
+# Test reverb with different decay times
+for decay in 0.0 0.5 1.0; do
+  ./build/plugparams --plugin reverb.vst3 --set "Decay=$decay"
+  ./build/plugperf --plugin reverb.vst3 \
+    --buffers 1024 --iterations 200 \
+    --out "results_decay_${decay}.csv"
+done
 ```
 
 ## Validation

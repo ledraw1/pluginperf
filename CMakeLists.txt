@@ -45,20 +45,31 @@ if(NOT JUCE_FROM_ENV)
 endif()
 
 # =========================
-# Target
+# Targets
 # =========================
+
+# Main benchmarking tool
 add_executable(plugperf
   src/main.cpp
   src/argparse.hpp
   src/csv.hpp
+  src/benchmark_thread.hpp
+)
+
+# Parameter inspector tool
+add_executable(plugparams
+  src/plugparams.cpp
+  src/plugin_params.hpp
 )
 
 # C++ standard and warnings
-set_target_properties(plugperf PROPERTIES CXX_STANDARD 17 CXX_STANDARD_REQUIRED YES)
+set_target_properties(plugperf plugparams PROPERTIES CXX_STANDARD 17 CXX_STANDARD_REQUIRED YES)
 if (MSVC)
   target_compile_options(plugperf PRIVATE /W4 /permissive-)
+  target_compile_options(plugparams PRIVATE /W4 /permissive-)
 else()
   target_compile_options(plugperf PRIVATE -Wall -Wextra -Wpedantic)
+  target_compile_options(plugparams PRIVATE -Wall -Wextra -Wpedantic)
 endif()
 
 # JUCE host flags: enable VST3 hosting (AU later)
@@ -68,8 +79,21 @@ target_compile_definitions(plugperf PRIVATE
   $<$<CONFIG:Debug>:JUCE_LOG_ASSERTIONS=1>
 )
 
+target_compile_definitions(plugparams PRIVATE
+  JUCE_GLOBAL_MODULE_SETTINGS_INCLUDED=1
+  JUCE_PLUGINHOST_VST3=1
+  $<$<CONFIG:Debug>:JUCE_LOG_ASSERTIONS=1>
+)
+
 # Link against minimal JUCE modules required for a headless host
 target_link_libraries(plugperf PRIVATE
+  juce::juce_core
+  juce::juce_audio_basics
+  juce::juce_audio_formats
+  juce::juce_audio_processors
+)
+
+target_link_libraries(plugparams PRIVATE
   juce::juce_core
   juce::juce_audio_basics
   juce::juce_audio_formats
@@ -88,7 +112,7 @@ endif()
 # =========================
 # Install
 # =========================
-install(TARGETS plugperf RUNTIME DESTINATION bin)
+install(TARGETS plugperf plugparams RUNTIME DESTINATION bin)
 
 # Install tools
 install(PROGRAMS tools/visualize.py DESTINATION bin)

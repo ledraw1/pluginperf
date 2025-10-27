@@ -36,8 +36,14 @@ PlugPerf is a performance benchmarking and optimization tool tailored for audio 
   - Result: Consistent measurements with elevated priority
 
 ### Milestone B: Performance Sweeper Core Implementation
+- [x] Implement parameter setting via command line (--param name=value)
+  - Created `plugparams` tool for parameter inspection and manipulation
+  - Supports querying all parameters with type classification (Boolean/Discrete/Continuous)
+  - Shows ranges, possible values, and current settings
+  - Allows setting parameters by index, name, or ID
+  - JSON output for programmatic use
+  - Verbose mode for detailed parameter information
 - [ ] Add support for loading plugin presets (VST3 .vstpreset files)
-- [ ] Implement parameter setting via command line (--param name=value)
 - [ ] Add ability to save/restore plugin state for reproducible tests
 - [ ] Collect system metadata (CPU model, core count, RAM, OS version)
 - [ ] Collect plugin metadata (name, version, vendor, format, unique ID)
