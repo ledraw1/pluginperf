@@ -10,6 +10,7 @@
 #include "argparse.hpp"
 #include "csv.hpp"
 #include "benchmark_thread.hpp"
+#include "system_info.hpp"
 
 using namespace juce;
 
@@ -151,6 +152,9 @@ int main (int argc, char** argv)
 
     sink.header();
 
+    // Collect system information once
+    SystemInfo sysInfo = SystemInfo::collect();
+    
     const String pluginName = proc->getName();
     const String formatName = "VST3";
 
@@ -207,7 +211,12 @@ int main (int argc, char** argv)
                    std::to_string(s.mean), std::to_string(s.median), std::to_string(s.p95),
                    std::to_string(s.min), std::to_string(s.max), std::to_string(s.stdDev),
                    std::to_string(s.cv), std::to_string(s.rtPct), std::to_string(s.dspLoad),
-                   std::to_string(s.latency) });
+                   std::to_string(s.latency),
+                   sysInfo.cpuModel.toStdString(),
+                   std::to_string(sysInfo.numPhysicalCores),
+                   std::to_string(sysInfo.cpuSpeedMHz),
+                   std::to_string(sysInfo.totalRAM / (1024.0 * 1024.0 * 1024.0)),
+                   sysInfo.osName.toStdString() });
     }
 
     // Clean up plugin instance before message manager

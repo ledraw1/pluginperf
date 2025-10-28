@@ -54,7 +54,13 @@ PlugPerf is a performance benchmarking and optimization tool tailored for audio 
   - Load preset before running benchmarks
   - Verify loaded state with parameter queries
   - Integrated into `plugparams` tool
-- [ ] Collect system metadata (CPU model, core count, RAM, OS version)
+- [x] Collect system metadata (CPU model, core count, RAM, OS version)
+  - Created `SystemInfo` class for comprehensive system information
+  - Collects CPU model, vendor, speed, core counts
+  - Detects CPU features (SSE2/3/4.1, AVX/AVX2/AVX-512, NEON)
+  - Reports total RAM and OS information
+  - Created `sysinfo` CLI tool with multiple output formats
+  - Supports JSON, CSV, and summary formats
 - [ ] Collect plugin metadata (name, version, vendor, format, unique ID)
 - [ ] Capture test configuration metadata (sample rate, buffer sizes, iterations, etc.)
 - [ ] Design and implement the performance sweeper engine
@@ -62,6 +68,7 @@ PlugPerf is a performance benchmarking and optimization tool tailored for audio 
 - [ ] Create detailed profiling and reporting tools
 - [ ] Validate sweeper accuracy against known benchmarks
 - [ ] Optimize test execution time without sacrificing accuracy
+- [ ] Support custom json format from SBarch
 
 ### Milestone C: User Interface and Usability Enhancements
 - [ ] Design a clean, intuitive UI for configuring tests and viewing results

@@ -1,7 +1,7 @@
 ==========================================================================================
 PLUGPERF BATCH TEST SUMMARY
 ==========================================================================================
-Generated: 2025-10-27 13:52:26
+Generated: 2025-10-28 10:21:02
 Total plugins tested: 37
 Successful: 37
 Failed: 0
@@ -10,41 +10,41 @@ SUCCESSFUL TESTS
 ------------------------------------------------------------------------------------------
 Plugin                                             Avg DSP%     Avg CV%      Buffers   
 ------------------------------------------------------------------------------------------
-uaudio_175_b.vst3                                  3.34         5.64         4         
-uaudio_176.vst3                                    3.35         3.24         4         
-uaudio_610_a.vst3                                  3.61         4.75         4         
-uaudio_610_b.vst3                                  4.06         16.72        4         
-uaudio_a_type_multiband.vst3                       1.34         8.68         4         
-uaudio_ampex_atr-102_tape.vst3                     3.21         5.89         4         
-uaudio_anthem.vst3                                 16.45        3.76         4         
-uaudio_api_2500.vst3                               3.96         4.82         4         
-uaudio_api_vision_channel_strip.vst3               1.18         4.98         4         
-uaudio_avalon_vt-737sp.vst3                        4.53         3.86         4         
-uaudio_brigade_chorus.vst3                         0.21         3.63         4         
-uaudio_capitol_chambers.vst3                       4.71         34.43        4         
-uaudio_capitol_compressor.vst3                     2.34         3.50         4         
-uaudio_century_channel_strip.vst3                  3.58         2.48         4         
-uaudio_dbx_160.vst3                                0.58         3.52         4         
-uaudio_distressor.vst3                             6.74         3.13         4         
-uaudio_dream_amp.vst3                              15.02        4.04         4         
-uaudio_electra.vst3                                9.05         5.27         4         
-uaudio_fairchild_660.vst3                          2.65         3.28         4         
-uaudio_fairchild_670.vst3                          2.86         11.51        4         
-uaudio_galaxy_tape_echo.vst3                       0.39         4.42         4         
-uaudio_hitsville_chambers.vst3                     4.59         18.64        4         
-uaudio_hitsville_eq.vst3                           5.92         2.65         4         
-uaudio_hitsville_eq_mastering.vst3                 6.29         3.60         4         
-uaudio_la3a.vst3                                   0.63         6.53         4         
-uaudio_lexicon_224.vst3                            1.22         5.11         4         
-uaudio_lion_amp.vst3                               24.97        8.40         4         
-uaudio_manley_massive_passive.vst3                 6.20         2.09         4         
-uaudio_manley_massive_passive_m.vst3               6.21         2.94         4         
-uaudio_manley_preamp.vst3                          3.32         2.30         4         
-uaudio_manley_voxbox.vst3                          5.87         2.56         4         
-uaudio_minimoog.vst3                               0.04         3.00         4         
-uaudio_neve_1073.vst3                              2.77         2.02         4         
-uaudio_ssl_e_channel_strip.vst3                    1.67         3.34         4         
-uaudio_ua_1176_rev_a.vst3                          1.60         3.77         4         
-uaudio_ua_1176ae.vst3                              1.68         1.58         4         
-uaudio_ua_1176ln_rev_e.vst3                        1.58         1.61         4         
+uaudio_175_b.vst3                                  3.29         2.86         4         
+uaudio_176.vst3                                    3.37         5.12         4         
+uaudio_610_a.vst3                                  3.68         14.29        4         
+uaudio_610_b.vst3                                  4.07         9.54         4         
+uaudio_a_type_multiband.vst3                       1.34         5.91         4         
+uaudio_ampex_atr-102_tape.vst3                     3.17         2.87         4         
+uaudio_anthem.vst3                                 16.38        3.16         4         
+uaudio_api_2500.vst3                               4.33         78.78        4         
+uaudio_api_vision_channel_strip.vst3               1.19         7.41         4         
+uaudio_avalon_vt-737sp.vst3                        4.54         3.32         4         
+uaudio_brigade_chorus.vst3                         0.21         3.32         4         
+uaudio_capitol_chambers.vst3                       4.57         17.31        4         
+uaudio_capitol_compressor.vst3                     2.36         3.16         4         
+uaudio_century_channel_strip.vst3                  3.61         2.23         4         
+uaudio_dbx_160.vst3                                0.61         2.40         4         
+uaudio_distressor.vst3                             6.93         9.06         4         
+uaudio_dream_amp.vst3                              15.21        6.05         4         
+uaudio_electra.vst3                                9.14         5.17         4         
+uaudio_fairchild_660.vst3                          2.69         8.19         4         
+uaudio_fairchild_670.vst3                          2.69         2.63         4         
+uaudio_galaxy_tape_echo.vst3                       0.39         16.40        4         
+uaudio_hitsville_chambers.vst3                     4.67         18.05        4         
+uaudio_hitsville_eq.vst3                           6.10         8.04         4         
+uaudio_hitsville_eq_mastering.vst3                 6.40         4.40         4         
+uaudio_la3a.vst3                                   0.66         6.57         4         
+uaudio_lexicon_224.vst3                            1.21         3.99         4         
+uaudio_lion_amp.vst3                               24.99        2.69         4         
+uaudio_manley_massive_passive.vst3                 6.35         9.22         4         
+uaudio_manley_massive_passive_m.vst3               6.44         13.81        4         
+uaudio_manley_preamp.vst3                          3.49         18.51        4         
+uaudio_manley_voxbox.vst3                          6.16         11.03        4         
+uaudio_minimoog.vst3                               0.04         28.23        4         
+uaudio_neve_1073.vst3                              2.87         5.80         4         
+uaudio_ssl_e_channel_strip.vst3                    1.98         87.37        4         
+uaudio_ua_1176_rev_a.vst3                          1.81         41.57        4         
+uaudio_ua_1176ae.vst3                              1.78         9.40         4         
+uaudio_ua_1176ln_rev_e.vst3                        1.63         5.63         4         
 

@@ -172,6 +172,32 @@ Features:
 - Optional `--skip-errors` to continue on failures
 - 5-minute timeout per plugin
 
+### System Information
+
+View system specifications with `sysinfo`:
+
+```bash
+# Full system information
+./build/sysinfo
+
+# Brief summary
+./build/sysinfo --summary
+# Output: Apple M1 Max (10C/10T) @ 2400MHz, 32.00 GB RAM, Mac OSX 15.6.1
+
+# JSON format
+./build/sysinfo --json
+
+# CSV format
+./build/sysinfo --csv
+```
+
+Features:
+- CPU model, vendor, speed, and core counts
+- CPU features (SSE, AVX, NEON)
+- Total RAM
+- OS name and version
+- Multiple output formats (text, JSON, CSV)
+
 ### Parameter Inspection
 
 Inspect and manipulate plugin parameters with `plugparams`:

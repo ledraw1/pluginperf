@@ -29,7 +29,8 @@ struct CsvSink {
         (*out)
             << "plugin_name,plugin_path,format,sr,channels,bit_depth,warmup,iterations,block_size,"
             << "mean_us,median_us,p95_us,min_us,max_us,std_dev_us,cv_pct,"
-            << "approx_rt_cpu_pct,dsp_load_pct,latency_samples\n";
+            << "approx_rt_cpu_pct,dsp_load_pct,latency_samples,"
+            << "cpu_model,cpu_cores,cpu_speed_mhz,total_ram_gb,os_name\n";
     }
 
     void row(const std::vector<std::string>& cols) {

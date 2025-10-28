@@ -62,14 +62,22 @@ add_executable(plugparams
   src/plugin_params.hpp
 )
 
+# System information tool
+add_executable(sysinfo
+  src/sysinfo.cpp
+  src/system_info.hpp
+)
+
 # C++ standard and warnings
-set_target_properties(plugperf plugparams PROPERTIES CXX_STANDARD 17 CXX_STANDARD_REQUIRED YES)
+set_target_properties(plugperf plugparams sysinfo PROPERTIES CXX_STANDARD 17 CXX_STANDARD_REQUIRED YES)
 if (MSVC)
   target_compile_options(plugperf PRIVATE /W4 /permissive-)
   target_compile_options(plugparams PRIVATE /W4 /permissive-)
+  target_compile_options(sysinfo PRIVATE /W4 /permissive-)
 else()
   target_compile_options(plugperf PRIVATE -Wall -Wextra -Wpedantic)
   target_compile_options(plugparams PRIVATE -Wall -Wextra -Wpedantic)
+  target_compile_options(sysinfo PRIVATE -Wall -Wextra -Wpedantic)
 endif()
 
 # JUCE host flags: enable VST3 hosting (AU later)
@@ -100,6 +108,10 @@ target_link_libraries(plugparams PRIVATE
   juce::juce_audio_processors
 )
 
+target_link_libraries(sysinfo PRIVATE
+  juce::juce_core
+)
+
 # macOS specific: Encourage new runtime where applicable
 if(APPLE)
   # Set a sensible deployment target if not already set
@@ -112,7 +124,7 @@ endif()
 # =========================
 # Install
 # =========================
-install(TARGETS plugperf plugparams RUNTIME DESTINATION bin)
+install(TARGETS plugperf plugparams sysinfo RUNTIME DESTINATION bin)
 
 # Install tools
 install(PROGRAMS tools/visualize.py DESTINATION bin)
