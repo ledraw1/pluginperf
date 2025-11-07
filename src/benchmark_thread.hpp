@@ -47,25 +47,52 @@ public:
     }
     
     /**
-     * Run a benchmark with the given configuration.
-     * Assumes the calling thread already has elevated priority set.
+     * Run a benchmark with the given configuration using a dedicated thread.
      */
     BenchmarkResult runBenchmark(const BenchmarkConfig& config)
     {
         config_ = config;
         result_ = BenchmarkResult();
-        
-        // Note: Priority should be set once by caller before running benchmarks
-        // This avoids repeated priority changes which could affect measurements
-        
+
+        if (config_.plugin == nullptr)
+        {
+            result_.success = false;
+            result_.errorMessage = "Invalid benchmark configuration: plugin is null";
+            return result_;
+        }
+
+        auto rtOptions = createRealtimeOptions(config_);
+        bool started = startRealtimeThread(rtOptions);
+
+        if (! started)
+        {
+            std::cerr << "WARNING: Unable to start realtime benchmark thread; falling back to high priority.\n";
+            started = startThread(Thread::Priority::high);
+        }
+
+        if (! started)
+        {
+            result_.success = false;
+            result_.errorMessage = "Failed to start benchmark thread";
+            return result_;
+        }
+
+        waitForThreadToExit(-1);
+        return result_;
+    }
+    
+private:
+    void run() override
+    {
+        const BenchmarkConfig configCopy = config_;
+
         try
         {
-            // Run measurement directly on current thread
-            if (config.useDoublePrecision)
-                result_.stats = measureOneImpl<double>();
+            if (configCopy.useDoublePrecision)
+                result_.stats = measureOneImpl<double>(configCopy);
             else
-                result_.stats = measureOneImpl<float>();
-            
+                result_.stats = measureOneImpl<float>(configCopy);
+
             result_.success = true;
         }
         catch (const std::exception& e)
@@ -80,27 +107,19 @@ public:
             result_.errorMessage = "Unknown exception";
             std::cerr << "ERROR: Unknown exception\n";
         }
-        
-        return result_;
-    }
-    
-private:
-    void run() override
-    {
-        // Not used - we run on current thread instead
     }
     
     template <typename Sample>
-    Stats measureOneImpl()
+    Stats measureOneImpl(const BenchmarkConfig& cfg)
     {
         ScopedNoDenormals noDenormals;
         
-        auto& plug = *config_.plugin;
-        const int block = config_.blockSize;
-        const int channels = config_.channels;
-        const double sr = config_.sampleRate;
-        const int warmup = config_.warmupIterations;
-        const int iters = config_.timedIterations;
+        auto& plug = *cfg.plugin;
+        const int block = cfg.blockSize;
+        const int channels = cfg.channels;
+        const double sr = cfg.sampleRate;
+        const int warmup = cfg.warmupIterations;
+        const int iters = cfg.timedIterations;
         
         // Recreate processing state per block size to surface reallocations
         plug.releaseResources();
@@ -211,6 +230,21 @@ private:
         return Stats{mean, median, p95, mn, mx, stdDev, cv, rtPct, dspLoad, latency};
     }
     
+    static Thread::RealtimeOptions createRealtimeOptions(const BenchmarkConfig& cfg)
+    {
+        Thread::RealtimeOptions opts;
+
+        opts = opts.withPriority(8);
+
+        if (cfg.blockSize > 0 && cfg.sampleRate > 0.0)
+        {
+            opts = opts.withApproximateAudioProcessingTime(cfg.blockSize, cfg.sampleRate)
+                       .withPeriodHz(cfg.sampleRate / (double) cfg.blockSize);
+        }
+
+        return opts;
+    }
+
     BenchmarkConfig config_;
     BenchmarkResult result_;
 };
