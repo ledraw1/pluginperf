@@ -78,18 +78,20 @@ public:
     static std::vector<ParameterInfo> queryParameters(AudioPluginInstance& plugin) {
         std::vector<ParameterInfo> params;
         
-        const int numParams = plugin.getNumParameters();
+        auto& rawParams = plugin.getParameters();
+        const int numParams = rawParams.size();
         
         for (int i = 0; i < numParams; ++i) {
             ParameterInfo info;
             info.index = i;
-            info.name = plugin.getParameterName(i);
-            info.label = plugin.getParameterLabel(i);
-            info.currentValue = plugin.getParameter(i);
             
             // Try to get parameter ID from AudioProcessorParameter
-            if (auto* param = plugin.getParameters()[i]) {
-                info.id = param->getName(100);  // Max 100 chars
+            auto* param = (i < rawParams.size()) ? rawParams[i] : nullptr;
+            if (param != nullptr) {
+                info.name = param->getName(100);
+                info.label = param->getLabel();
+                info.currentValue = param->getValue();
+                info.id = getParameterIdentifier(*param, i);
                 info.defaultValue = param->getDefaultValue();
                 info.isAutomatable = param->isAutomatable();
                 info.isMetaParameter = param->isMetaParameter();
@@ -121,7 +123,10 @@ public:
                 }
             } else {
                 // Fallback for legacy parameters
-                info.id = String(i);
+                info.name = String("Parameter ") + String(std::to_string(i));
+                info.label = {};
+                info.currentValue = 0.0f;
+                info.id = String(std::to_string(i));
                 info.defaultValue = 0.5f;
                 info.isAutomatable = true;
                 info.isMetaParameter = false;
@@ -142,14 +147,30 @@ public:
      * Set a parameter by index (normalized 0.0-1.0)
      */
     static bool setParameter(AudioPluginInstance& plugin, int index, float normalizedValue) {
-        if (index < 0 || index >= plugin.getNumParameters()) {
+        auto& params = plugin.getParameters();
+        const int numParams = params.size();
+        if (index < 0 || index >= numParams) {
             std::cerr << "ERROR: Parameter index " << index << " out of range (0-" 
-                      << plugin.getNumParameters() - 1 << ")\n";
+                      << jmax(0, numParams - 1) << ")\n";
             return false;
         }
         
         normalizedValue = jlimit(0.0f, 1.0f, normalizedValue);
+
+        if (index < params.size()) {
+            if (auto* param = params[index]) {
+                param->setValueNotifyingHost(normalizedValue);
+                return true;
+            }
+        }
+
+        // Fallback for processors that don't expose AudioProcessorParameter objects
+        std::cerr << "WARNING: Parameter index " << index
+                  << " is not backed by an AudioProcessorParameter; using legacy setParameter() (host automation may not be notified).\n";
+
+        JUCE_BEGIN_IGNORE_WARNINGS_GCC_LIKE ("-Wdeprecated-declarations")
         plugin.setParameter(index, normalizedValue);
+        JUCE_END_IGNORE_WARNINGS_GCC_LIKE
         return true;
     }
     
@@ -157,9 +178,12 @@ public:
      * Set a parameter by name (normalized 0.0-1.0)
      */
     static bool setParameterByName(AudioPluginInstance& plugin, const String& name, float normalizedValue) {
-        for (int i = 0; i < plugin.getNumParameters(); ++i) {
-            if (plugin.getParameterName(i).equalsIgnoreCase(name)) {
-                return setParameter(plugin, i, normalizedValue);
+        auto& params = plugin.getParameters();
+        for (int i = 0; i < params.size(); ++i) {
+            if (auto* param = params[i]) {
+                if (param->getName(100).equalsIgnoreCase(name)) {
+                    return setParameter(plugin, i, normalizedValue);
+                }
             }
         }
         
@@ -171,9 +195,11 @@ public:
      * Set a parameter by ID (normalized 0.0-1.0)
      */
     static bool setParameterById(AudioPluginInstance& plugin, const String& id, float normalizedValue) {
-        for (int i = 0; i < plugin.getNumParameters(); ++i) {
-            if (auto* param = plugin.getParameters()[i]) {
-                if (param->getName(100).equalsIgnoreCase(id)) {
+        auto& params = plugin.getParameters();
+        const int numParams = params.size();
+        for (int i = 0; i < numParams; ++i) {
+            if (auto* param = params[i]) {
+                if (getParameterIdentifier(*param, i).equalsIgnoreCase(id)) {
                     return setParameter(plugin, i, normalizedValue);
                 }
             }
@@ -238,7 +264,7 @@ public:
                 } else if (p.type == ParameterType::Boolean) {
                     rangeInfo = "Off / On";
                 } else if (p.type == ParameterType::Discrete && !p.valueStrings.empty()) {
-                    rangeInfo = String(p.numSteps) + " steps";
+                    rangeInfo = String(std::to_string(p.numSteps)) + " steps";
                 }
                 
                 std::cout << String::formatted("%-4d %-30s %-12s %-10.3f %-20s %s\n",
@@ -290,5 +316,20 @@ private:
             return ParameterType::Continuous;
         
         return ParameterType::Unknown;
+    }
+
+    static String getParameterIdentifier(AudioProcessorParameter& param, int fallbackIndex) {
+        if (auto* withID = dynamic_cast<AudioProcessorParameterWithID*>(&param)) {
+            if (withID->paramID.isNotEmpty())
+                return withID->paramID;
+        }
+
+        if (auto* hostedParam = dynamic_cast<HostedAudioProcessorParameter*>(&param)) {
+            const auto paramID = hostedParam->getParameterID();
+            if (paramID.isNotEmpty())
+                return paramID;
+        }
+
+        return String(std::to_string(fallbackIndex));
     }
 };
