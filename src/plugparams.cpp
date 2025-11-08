@@ -5,6 +5,7 @@
 
 #include "plugin_params.hpp"
 #include "plugin_presets.hpp"
+#include "storybored_presets.hpp"
 
 using namespace juce;
 
@@ -24,6 +25,8 @@ Options:
   --load-preset PATH      Load VST3 preset file (.vstpreset)
   --save-preset PATH      Save current state to preset file
   --preset-info PATH      Show information about a preset file
+  --preset-json PATH      Load StoryBored JSON preset file
+  --sb-preset-info PATH   Show information about StoryBored JSON preset
   --json                  Output in JSON format
   
 Examples:
@@ -55,6 +58,12 @@ Examples:
   
   # Preset info
   plugparams --preset-info preset.vstpreset
+  
+  # Load StoryBored JSON preset
+  plugparams --plugin plugin.vst3 --preset-json preset.json --verbose
+  
+  # StoryBored preset info
+  plugparams --sb-preset-info preset.json
 
 )" << std::endl;
 }
@@ -64,6 +73,8 @@ struct Args {
     String loadPresetPath;
     String savePresetPath;
     String presetInfoPath;
+    String presetJsonPath;
+    String sbPresetInfoPath;
     bool listParams = false;
     bool verbose = false;
     bool jsonOutput = false;
@@ -92,6 +103,10 @@ bool parseArgs(int argc, char** argv, Args& args) {
             args.savePresetPath = argv[++i];
         } else if (arg == "--preset-info" && i + 1 < argc) {
             args.presetInfoPath = argv[++i];
+        } else if (arg == "--preset-json" && i + 1 < argc) {
+            args.presetJsonPath = argv[++i];
+        } else if (arg == "--sb-preset-info" && i + 1 < argc) {
+            args.sbPresetInfoPath = argv[++i];
         } else if (arg == "--get" && i + 1 < argc) {
             args.getParams.push_back(argv[++i]);
         } else if (arg == "--set" && i + 1 < argc) {
@@ -109,7 +124,7 @@ bool parseArgs(int argc, char** argv, Args& args) {
     }
     
     // Allow preset-info without plugin
-    if (args.pluginPath.isEmpty() && args.presetInfoPath.isEmpty()) {
+    if (args.pluginPath.isEmpty() && args.presetInfoPath.isEmpty() && args.sbPresetInfoPath.isEmpty()) {
         std::cerr << "ERROR: --plugin is required\n";
         printUsage();
         return false;
@@ -169,15 +184,29 @@ void outputJSON(const std::vector<ParameterInfo>& params) {
 }
 
 int main(int argc, char** argv) {
+    // Initialize JUCE message manager (required for plugin loading)
+    MessageManager::getInstance();
+    
+    // Handle --preset-info without loading plugin
+    for (int i = 1; i < argc; ++i) {
+        String arg(argv[i]);
+        if (arg == "--preset-info" && i + 1 < argc) {
+            String presetPath(argv[i + 1]);
+            PluginPresetManager::printPresetInfo(presetPath);
+            MessageManager::deleteInstance();
+            return 0;
+        }
+        if (arg == "--sb-preset-info" && i + 1 < argc) {
+            String presetPath(argv[i + 1]);
+            StoryBoredPresetLoader::printPresetInfo(presetPath);
+            MessageManager::deleteInstance();
+            return 0;
+        }
+    }
+    
     Args args;
     if (!parseArgs(argc, argv, args))
         return argc <= 1 ? 0 : 1;
-    
-    // Handle preset-info without loading plugin
-    if (!args.presetInfoPath.isEmpty()) {
-        PluginPresetManager::printPresetInfo(args.presetInfoPath);
-        return 0;
-    }
     
     // Initialize JUCE
     MessageManager::getInstance();
@@ -243,6 +272,22 @@ int main(int argc, char** argv) {
             }
         } else {
             std::cerr << "✗ Failed to load preset\n";
+        }
+    }
+    
+    // Handle --preset-json (StoryBored JSON preset)
+    if (!args.presetJsonPath.isEmpty()) {
+        auto presetData = StoryBoredPresetLoader::loadPreset(args.presetJsonPath);
+        if (presetData.isValid) {
+            int appliedCount = StoryBoredPresetLoader::applyPresetToPlugin(*plugin, presetData, args.verbose);
+            if (appliedCount > 0) {
+                std::cout << "✓ Loaded StoryBored preset: " << presetData.metadata.name << "\n";
+                std::cout << "  Applied " << appliedCount << " parameters\n";
+            } else {
+                std::cerr << "✗ Failed to apply preset parameters\n";
+            }
+        } else {
+            std::cerr << "✗ Failed to load StoryBored preset\n";
         }
     }
     

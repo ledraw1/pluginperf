@@ -11,6 +11,7 @@
 #include "csv.hpp"
 #include "benchmark_thread.hpp"
 #include "system_info.hpp"
+#include "storybored_presets.hpp"
 
 using namespace juce;
 
@@ -138,6 +139,18 @@ int main (int argc, char** argv)
         std::cerr << "Unable to configure plugin for "
                   << args.channels << " channels.\n";
         return 2;
+    }
+    
+    // Load StoryBored JSON preset if specified
+    if (!args.presetJson.empty()) {
+        auto presetData = StoryBoredPresetLoader::loadPreset(String(args.presetJson));
+        if (presetData.isValid) {
+            int appliedCount = StoryBoredPresetLoader::applyPresetToPlugin(*proc, presetData, false);
+            std::cerr << "Loaded preset: " << presetData.metadata.name.toStdString() 
+                     << " (" << appliedCount << " parameters applied)\n";
+        } else {
+            std::cerr << "WARNING: Failed to load preset: " << args.presetJson << "\n";
+        }
     }
 
     CsvSink sink;

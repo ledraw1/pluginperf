@@ -16,6 +16,7 @@ struct Args {
     int warmup = 40;
     int iterations = 400;
     std::string outCsv; // empty => stdout
+    std::string presetJson; // StoryBored JSON preset path
 };
 
 static inline std::vector<int> parseIntList(const std::string& s) {
@@ -46,6 +47,7 @@ Options:
   --warmup N               Warmup iterations per size (default 40)
   --iterations N           Timed iterations per size (default 400)
   --out PATH               Write CSV to PATH (default stdout)
+  --preset-json PATH       Load StoryBored JSON preset before benchmarking
   -h, --help               Show this help and exit
 )HELP", argv0);
 }
@@ -66,6 +68,7 @@ static inline bool parseArgs(int argc, char** argv, Args& a) {
         else if (k == "--warmup") { if (!need("--warmup")) return false; a.warmup = std::stoi(argv[++i]); }
         else if (k == "--iterations") { if (!need("--iterations")) return false; a.iterations = std::stoi(argv[++i]); }
         else if (k == "--out") { if (!need("--out")) return false; a.outCsv = argv[++i]; }
+        else if (k == "--preset-json") { if (!need("--preset-json")) return false; a.presetJson = argv[++i]; }
         else { std::fprintf(stderr, "Unknown option: %s\n", k.c_str()); return false; }
     }
 
