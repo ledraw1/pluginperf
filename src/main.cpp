@@ -6,6 +6,8 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <thread>
+#include <atomic>
 
 #include "argparse.hpp"
 #include "csv.hpp"
@@ -89,7 +91,13 @@ int main (int argc, char** argv)
     Args args; if (!parseArgs(argc, argv, args)) return argc <= 1 ? 0 : 1;
 
     // Initialize JUCE message manager (required for plugin loading)
+    // CRITICAL: MessageManager must be initialized on the main thread
+    // and we must BE on the message thread for plugin operations
     MessageManager::getInstance();
+    
+    // Make this thread the message thread
+    // This allows plugins to safely call MessageManager operations during prepareToPlay
+    MessageManager::getInstance()->setCurrentThreadAsMessageThread();
     
     // Initialize plugin formats
     AudioPluginFormatManager fm; fm.addDefaultFormats();
@@ -110,6 +118,7 @@ int main (int argc, char** argv)
     }
 
     // Scan the plugin file to get proper description
+    std::cerr << "[DEBUG] Scanning plugin file..." << std::endl;
     OwnedArray<PluginDescription> foundPlugins;
     vst3Format->findAllTypesForFile(foundPlugins, args.pluginPath);
     
@@ -120,11 +129,16 @@ int main (int argc, char** argv)
 
     // Use the first plugin found
     PluginDescription desc = *foundPlugins[0];
+    std::cerr << "[DEBUG] Found plugin: " << desc.name << std::endl;
     
     String err;
+    std::cerr << "[DEBUG] Creating plugin instance (without prepareToPlay)..." << std::endl;
+    // Pass 0 for block size to skip prepareToPlay() during instantiation
+    // We'll call it explicitly later in the benchmark thread
     std::unique_ptr<AudioPluginInstance> instance(
-        fm.createPluginInstance(desc, args.sampleRate, 512, err)
+        fm.createPluginInstance(desc, 0, 0, err)
     );
+    std::cerr << "[DEBUG] Plugin instance created!" << std::endl;
 
     if (!instance) {
         printInstantiationError(err, desc.fileOrIdentifier);
@@ -133,6 +147,7 @@ int main (int argc, char** argv)
 
     auto* proc = instance.get();
 
+    std::cerr << "[DEBUG] Configuring channel layout..." << std::endl;
     int measurementChannels = args.channels;
     if (! configureChannelLayout(*proc, args.channels, measurementChannels))
     {
@@ -140,6 +155,7 @@ int main (int argc, char** argv)
                   << args.channels << " channels.\n";
         return 2;
     }
+    std::cerr << "[DEBUG] Channel layout configured!" << std::endl;
     
     // Load StoryBored JSON preset if specified
     if (!args.presetJson.empty()) {

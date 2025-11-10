@@ -61,23 +61,11 @@ public:
             return result_;
         }
 
-        auto rtOptions = createRealtimeOptions(config_);
-        bool started = startRealtimeThread(rtOptions);
-
-        if (! started)
-        {
-            std::cerr << "WARNING: Unable to start realtime benchmark thread; falling back to high priority.\n";
-            started = startThread(Thread::Priority::high);
-        }
-
-        if (! started)
-        {
-            result_.success = false;
-            result_.errorMessage = "Failed to start benchmark thread";
-            return result_;
-        }
-
-        waitForThreadToExit(-1);
+        // Run benchmark directly on current thread (message thread) instead of spawning
+        // a separate thread. This avoids MessageManager threading issues in headless environments
+        // where plugins may try to dispatch messages during prepareToPlay()
+        run();
+        
         return result_;
     }
     
@@ -122,9 +110,13 @@ private:
         const int iters = cfg.timedIterations;
         
         // Recreate processing state per block size to surface reallocations
+        std::cerr << "[DEBUG] Calling releaseResources()..." << std::endl;
         plug.releaseResources();
+        std::cerr << "[DEBUG] Calling setNonRealtime(false)..." << std::endl;
         plug.setNonRealtime(false); // real-time processing mode
+        std::cerr << "[DEBUG] Calling prepareToPlay(" << sr << ", " << block << ")..." << std::endl;
         plug.prepareToPlay(sr, block);
+        std::cerr << "[DEBUG] prepareToPlay() completed!" << std::endl;
         
         AudioBuffer<Sample> buf(channels, block);
         MidiBuffer midi;
