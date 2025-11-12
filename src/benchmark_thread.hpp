@@ -22,6 +22,7 @@ struct BenchmarkConfig {
     int warmupIterations = 0;
     int timedIterations = 0;
     bool useDoublePrecision = false;
+    bool nonRealtime = false;
 };
 
 struct BenchmarkResult {
@@ -112,8 +113,8 @@ private:
         // Recreate processing state per block size to surface reallocations
         std::cerr << "[DEBUG] Calling releaseResources()..." << std::endl;
         plug.releaseResources();
-        std::cerr << "[DEBUG] Calling setNonRealtime(false)..." << std::endl;
-        plug.setNonRealtime(false); // real-time processing mode
+        std::cerr << "[DEBUG] Calling setNonRealtime(" << cfg.nonRealtime << ")..." << std::endl;
+        plug.setNonRealtime(cfg.nonRealtime); // Use configured processing mode
         std::cerr << "[DEBUG] Calling prepareToPlay(" << sr << ", " << block << ")..." << std::endl;
         plug.prepareToPlay(sr, block);
         std::cerr << "[DEBUG] prepareToPlay() completed!" << std::endl;

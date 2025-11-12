@@ -218,6 +218,7 @@ int main (int argc, char** argv)
         config.warmupIterations = args.warmup;
         config.timedIterations = args.iterations;
         config.useDoublePrecision = useDouble;
+        config.nonRealtime = args.nonRealtime;
         
         // Run on real-time thread
         BenchmarkResult result = benchThread.runBenchmark(config);
