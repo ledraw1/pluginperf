@@ -1,5 +1,5 @@
 # PlugPerf
-Performance benchmarking tool for audio plugins, with focus on VST3 format. Designed for plugin developers and audio engineers who need accurate, reproducible performance measurements.
+Performance benchmarking tool for audio plugins, with focus on VST3 format. Designed for plugin developers and audio engineers who need accurate, reproducible performance measurements.  I 
 
 ## Features
 
@@ -10,9 +10,7 @@ Performance benchmarking tool for audio plugins, with focus on VST3 format. Desi
 - **Measurement consistency checks** - Automatic warnings for outliers and instability
 - **Parameter inspection** - Query and manipulate plugin parameters
 - **CSV export** - Detailed results for analysis and visualization
-- **Visualization tools** - Generate performance charts (PNG)
 - **Batch testing** - Automated testing of multiple plugins
-- **Cross-validated** - 95% match with Sim measurements
 
 ## Quick Start
 
