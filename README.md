@@ -1,10 +1,9 @@
 # PlugPerf
-
-A high-precision performance benchmarking tool for audio plugins, with focus on VST3 format. Designed for plugin developers and audio engineers who need accurate, reproducible performance measurements.
+Performance benchmarking tool for audio plugins, with focus on VST3 format. Designed for plugin developers and audio engineers who need accurate, reproducible performance measurements.
 
 ## Features
 
-- **Real-time performance measurement** - Matches Plugin Doctor methodology
+- **Real-time performance measurement** - Matches Similar Apps methodology
 - **Statistical validation** - Standard deviation, coefficient of variation, percentile analysis
 - **Multiple bit depths** - 32-bit float, 64-bit double
 - **Configurable sample rates** - Any rate (44.1kHz, 48kHz, 96kHz, 192kHz, etc.)
@@ -13,7 +12,7 @@ A high-precision performance benchmarking tool for audio plugins, with focus on 
 - **CSV export** - Detailed results for analysis and visualization
 - **Visualization tools** - Generate performance charts (PNG)
 - **Batch testing** - Automated testing of multiple plugins
-- **Cross-validated** - 95% match with Plugin Doctor measurements
+- **Cross-validated** - 95% match with Sim measurements
 
 ## Quick Start
 
@@ -300,9 +299,9 @@ cd ../..
 
 Expected baseline: ~0.16-1.1 μs (negligible overhead)
 
-### Cross-validation with Plugin Doctor
+### Cross-validation with Similar Apps
 
-PlugPerf measurements have been validated against Plugin Doctor:
+PlugPerf measurements have been validated against Similar Apps:
 - Average match: 95% (0.871x to 1.041x ratio)
 - Nearly identical at buffer sizes ≥ 4096
 - Both tools use real-time processing mode
@@ -381,7 +380,7 @@ WARNING: High coefficient of variation - CV=25%
 - Close other applications to reduce system noise
 - Use larger buffer sizes (more stable measurements)
 
-### Measurements don't match Plugin Doctor
+### Measurements don't match Similar Apps
 
 **Check:**
 - Are you using the same sample rate?
@@ -426,5 +425,4 @@ MIT License - See [LICENSE](LICENSE) for details.
 ## Acknowledgments
 
 - Built with [JUCE](https://juce.com/) framework
-- Validated against [Plugin Doctor](https://ddmf.eu/plugindoctor/)
 - Inspired by the need for accurate, reproducible plugin performance measurements
